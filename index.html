@@ -1,0 +1,811 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> <html lang="he"> <head>	<script>
+    var ravxxPostAnalyticsSessionID = new Date().getTime();
+    var ravxxPostAnalyticsSesssionIndex = 0;
+    var ravxx_analyticsPayLoads = [];
+    function __ravxxPostAnalytics(analyticsPayLoad) {
+        ravxxPostAnalyticsSesssionIndex++;
+        analyticsPayLoad["sessionIndex"] = ravxxPostAnalyticsSesssionIndex;
+        ravxx_analyticsPayLoads.push(analyticsPayLoad);
+    }
+    setInterval(ravxxPostAnalytics,1000 * 10);
+    window.addEventListener('beforeunload', function(event) {
+        ravxxPostAnalytics();
+    });
+    function ravxxPostAnalytics()
+    {
+        var analyticsPayLoads = ravxx_analyticsPayLoads;
+        if ( analyticsPayLoads.length == 0 )
+            return;
+        ravxx_analyticsPayLoads = [];
+
+        const parameters = {"pageId":"531a61d87cf36bc21e76a8710007a60a65ACFF71","analyticsId":"6e18d99137408a7b8f522f61ac431c7e_1646866_1698135069_1707471784.0136","ravxxc":"531a61d87cf36bc21e76a8710007a60a65ACFF71","ref":"","utmCampaign":"","utmMedium":"","utmSource":"","secret":"4b9d90c1ecf37bd9e158bebec961a071"};
+
+        var url = 'https://europe-west1-starry-arbor-189107.cloudfunctions.net/postAnalytics';
+
+        var queryString = '';
+        for (var key in parameters) {
+            if (parameters.hasOwnProperty(key)) {
+                if (queryString !== '') {
+                    queryString += '&';
+                }
+                queryString += encodeURIComponent(key) + '=' + encodeURIComponent(parameters[key]);
+            }
+        }
+
+        var fullUrl = url + '?' + queryString + "&sessionId=" + encodeURIComponent(ravxxPostAnalyticsSessionID) + "&analyticsPayloads=";
+
+        var analyticsPayloadsBlob = new Blob([JSON.stringify(analyticsPayLoads)], { type: 'text/plain' });
+
+        if (navigator.sendBeacon) {
+            navigator.sendBeacon(fullUrl, analyticsPayloadsBlob);
+        } else {
+            console.warn('navigator.sendBeacon() is not supported, falling back to fetch()');
+
+            fetch(fullUrl, {
+                mode: 'cors',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
+                body: JSON.stringify(analyticsPayLoads)  // Convert JavaScript object to JSON string
+            }).then(response => {
+                console.log('Response from the server:', response);
+                // Handle the response data here
+            })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Handle any errors that occurred during the request
+                });
+        }
+    }
+    __ravxxPostAnalytics({"__action__":"time","time":0});
+    __ravxxPostAnalytics({"__action__":"time_active","time":0});
+    var ravxxStartTime = new Date().getTime();
+    var ravxxLastDiff = 0;
+    function getRavxxTimeDiff() {
+        var diff = new Date().getTime() - ravxxStartTime;
+        return __getRavxxTimeDiff(diff);
+    }
+    function __getRavxxTimeDiff(diff) {
+        if ( diff <= 1000 * 10 )
+            diff = Math.floor(diff / 500) * 500;
+        else if ( diff <= 1000 * 60 * 0.5 )
+            diff = Math.floor(diff / ( 1 * 1000 ) ) * ( 1 * 1000 );
+        else if ( diff <= 1000 * 60 * 3 )
+            diff = Math.floor(diff / ( 5 * 1000 ) ) * ( 5 * 1000 );
+        else if ( diff <= 1000 * 60 * 10 )
+            diff = Math.floor(diff / ( 30 * 1000 ) ) * ( 30 * 1000 );
+        else if ( diff <= 1000 * 60 * 15 )
+            diff = Math.floor(diff / ( 60 * 1000 ) ) * ( 60 * 1000 );
+        else if ( diff <= 1000 * 60 * 60 )
+            diff = Math.floor(diff / ( 5 * 60 * 1000 ) ) * ( 5 * 60 * 1000 );
+        else
+            diff = 1000 * 60 * 60;
+
+        return diff;
+    }
+
+    setInterval(function() {
+        var diff = getRavxxTimeDiff();
+
+        if ( diff != ravxxLastDiff ) {
+            __ravxxPostAnalytics({"__action__":"time","time":diff});
+
+            ravxxLastDiff = diff;
+        }
+
+        if ( typeof(ravxx_handleIntersection_doTime) != "undefined" )
+            ravxx_handleIntersection_doTime();
+    },500);
+
+    function ravxx_do_time_active(diff) {
+        __ravxxPostAnalytics({"__action__":"time_active","time":diff});
+
+        ravxx_lastReported = diff;
+    }
+
+    let ravxx_isThrottled = false;
+    var ravxx_lastReported = 0;
+    function ravxx_throttleUserInteraction() {
+        if (!ravxx_isThrottled) {
+            var diff = getRavxxTimeDiff();
+            // Your code to handle the user interaction goes here
+            if ( diff !== ravxx_lastReported ) {
+                if ( ( diff - ravxx_lastReported ) > 1000 * 60 * 5 )
+                    ravxx_lastReported = diff + 1000 * 60;
+                else {
+                    ravxx_do_time_active(diff);
+                }
+            }
+
+            // Set a flag to indicate that the interaction is currently throttled
+            ravxx_isThrottled = true;
+
+            // Reset the flag after 100ms to allow the next interaction
+            setTimeout(() => {
+                ravxx_isThrottled = false;
+            }, 100);
+        }
+    }
+
+    // Attach the ravxx_throttleUserInteraction function to various event types, including scroll
+    document.addEventListener('click', ravxx_throttleUserInteraction);
+    document.addEventListener('mousedown', ravxx_throttleUserInteraction);
+    document.addEventListener('mouseup', ravxx_throttleUserInteraction);
+    document.addEventListener('keydown', ravxx_throttleUserInteraction);
+    document.addEventListener('keyup', ravxx_throttleUserInteraction);
+    document.addEventListener('mousemove', ravxx_throttleUserInteraction);
+    document.addEventListener('mouseenter', ravxx_throttleUserInteraction);
+    document.addEventListener('mouseleave', ravxx_throttleUserInteraction);
+    document.addEventListener('touchstart', ravxx_throttleUserInteraction);
+    document.addEventListener('touchmove', ravxx_throttleUserInteraction);
+    document.addEventListener('touchend', ravxx_throttleUserInteraction);
+    document.addEventListener('scroll', ravxx_throttleUserInteraction); // Add scroll event listener
+    // Add more event listeners for any other interactions you want to throttle
+
+
+    /*
+    var d = new Date().getTime();
+    __ravxxPostAnalytics({"__action__":"time","time":0});
+    setInterval(function() {
+        __ravxxPostAnalytics({"__action__":"time","time":new Date().getTime() - d});
+    },2000);
+    */
+</script><script>var __ravxxx_captcha__ = true;</script><style>body > div:has(iframe[src*="recaptcha"]) {display: none !important;}</style> <meta http-equiv="Content-Type" content="text/html; charset=utf-8">  <!--FORM_PROTECTION_CAPTCHA--> <script> const parsedURL = new URL(window.location.href); const hostname = parsedURL.hostname; if ( window["__ravxxx_captcha__"] ) { const scriptTag = document.createElement('script'); scriptTag.src = 'https://www.google.com/recaptcha/api.js?render=6LdUQi4mAAAAAK3x9z3v4BWVLqtHbQxeTn9rsT8b'; scriptTag.async = true; scriptTag.defer = true; document.head.appendChild(scriptTag); } </script>  <script type="text/javascript"> var realbeginning = new Date(); </script> <script type="text/javascript"> if (typeof console == "undefined") var console = { log: function() { } }; __ravpageContext = {'locals':{},'updates':[]}; cookiesStr = __ravpageContext.locals.cookiesStr = ""+document.cookie; publicID = __ravpageContext.locals.publicID = "531a61d87cf36bc21e76a8710007a60a65ACFF71"; tabtype = __ravpageContext.locals.tabtype = "desktop"; analyticsTrackingID = __ravpageContext.locals.analyticsTrackingID = ""; pageURL = __ravpageContext.locals.pageURL = "http://bebetter.ravpage.co.il/HamasFetish"; uniqueID = __ravpageContext.locals.uniqueID = "6723190_1706648851"; displayMode = __ravpageContext.locals.displayMode = "published"; </script>   <!-- Meta Pixel Code -->
+    <script>
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '632087245007237');
+        fbq('track', 'PageView');
+        fbq('track', 'Mica_Webinar_ViewContent');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+                   src="https://www.facebook.com/tr?id=632087245007237&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->    <meta name="viewport" content="width=device-width"> <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no"> <script type='text/javascript'>if ( typeof(realbeginning) == 'undefined' ) realbeginning = new Date(); var begin_wrapper_1 = new Date(); if ( ( typeof(__ravpageContext) != 'undefined' ) && __ravpageContext.locals.console ) __ravpageContext.locals.console.log('time till begin_wrapper_1',begin_wrapper_1-realbeginning);</script><script type='text/javascript' src='//js.ravpages.co.il/xsite_resources/js/static/cached/xsites/output/012024/xsites__output__a2477b505f4baac186057100de40dcfc_433d4e56f37a71ca02a3f2a4afa0191e_1706543951.js?rxc=1705555702'></script><script type='text/javascript'>if ( typeof(realbeginning) == 'undefined' ) realbeginning = new Date(); if ( ( typeof(__ravpageContext) != 'undefined' ) && __ravpageContext.locals.console ) __ravpageContext.locals.console.log('time after begin_wrapper_1',(new Date()) - realbeginning,'+(',(new Date()) - begin_wrapper_1,')');</script><script type='text/javascript'>if ( typeof(realbeginning) == 'undefined' ) realbeginning = new Date(); var begin_wrapper_1 = new Date(); if ( ( typeof(__ravpageContext) != 'undefined' ) && __ravpageContext.locals.console ) __ravpageContext.locals.console.log('time till begin_wrapper_1',begin_wrapper_1-realbeginning);</script><link rel='stylesheet' type='text/css' href='//css.ravpages.co.il/xsite_resources/js/static/cached/xsites/output/012024/xsites__output__c86108e190c3717d5f72c8d0bf6f1f76_d751713988987e9331980363e24189ce_1706543951_secure.css?cc=8&webp&modern&rxc=1705555702'><script type='text/javascript'>if ( typeof(realbeginning) == 'undefined' ) realbeginning = new Date(); if ( ( typeof(__ravpageContext) != 'undefined' ) && __ravpageContext.locals.console ) __ravpageContext.locals.console.log('time after begin_wrapper_1',(new Date()) - realbeginning,'+(',(new Date()) - begin_wrapper_1,')');</script> <style></style>   <style type="text/css">  </style>  <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon"> <title>Hamas atrocities</title> <meta name="description" content="">  <meta property="og:title" content="Hamas atrocities"> <meta property="og:url" content="http://bebetter.ravpage.co.il/HamasFetish">  <meta property="og:image" content="https://graphimages.ravpages.live/xsite_resources/xsite_thumbnails/v2/53/published_531a61d87cf36bc21e76a8710007a60a65ACFF71.png?ts=1706648853"> <meta property="og:image:secure_url" content="https://graphimages.ravpages.live/xsite_resources/xsite_thumbnails/v2/53/published_531a61d87cf36bc21e76a8710007a60a65ACFF71.png?ts=1706648853">   <!-- Meta Pixel Code -->
+    <script>
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '204747887576980');
+        fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+                   src="https://www.facebook.com/tr?id=204747887576980&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->   <script async src="https://www.youtube.com/iframe_api"></script>
+    <!-- Google Analytics -->
+    <script>
+        /*
+        window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+        ga('create', 'UA-110933292-19', 'auto', 'ravmesser_landingpages', {cookiePath:'/HamasFetish','siteSpeedSampleRate': 100,'alwaysSendReferrer': true});
+        var urlParams = {};
+        var match,
+            pl     = /\+/g,  // Regex for replacing addition symbol with a space
+            search = /([^&=]+)=?([^&]*)/g,
+            decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
+            query  = window.location.search.substring(1);
+
+        while (match = search.exec(query))
+           urlParams[decode(match[1])] = decode(match[2]);
+
+
+        var extraCampaignsGetParameters = ["ref"];
+
+        for ( var i = 0 ; i < extraCampaignsGetParameters.length ; i++ ) {
+            var param = extraCampaignsGetParameters[i];
+            if ( !("utm_source" in urlParams) && !("utm_medium" in urlParams) && !("utm_campaign" in urlParams) && (param in urlParams) ) {
+                urlParams["utm_campaign"] = "ravxx";
+                urlParams["utm_medium"] = "param_"+param;
+                urlParams["utm_source"] = urlParams[param];
+            }
+            else if ( "utm_campaign" in urlParams && urlParams["utm_campaign"] == "ravxx" && (param in urlParams) ) {
+                urlParams["utm_campaign"] = "ravxx_with_" + param + "_" + urlParams[param];
+            }
+        }
+
+        if ( "utm_source" in urlParams )
+            ga('ravmesser_landingpages.set', 'campaignSource', urlParams["utm_source"]);
+        if ( "utm_medium" in urlParams )
+            ga('ravmesser_landingpages.set', 'campaignMedium', urlParams["utm_medium"]);
+        if ( "utm_campaign" in urlParams )
+            ga('ravmesser_landingpages.set', 'campaignName', urlParams["utm_campaign"]);
+
+
+        ga('ravmesser_landingpages.set', 'location', 'https://ravpage.co.il/v'+'1'+'/'+'531a61d87cf36bc21e76a8710007a60a65ACFF71'+'/'+encodeURI('bebetter.ravpage.co.il/HamasFetish'));
+        ga('ravmesser_landingpages.set', 'hostname', 'ravpage.co.il');
+        ga('ravmesser_landingpages.set', 'page', '/v'+'1'+'/'+'531a61d87cf36bc21e76a8710007a60a65ACFF71'+'/'+encodeURI('bebetter.ravpage.co.il/HamasFetish'));
+        ga('ravmesser_landingpages.set', 'title', '531a61d87cf36bc21e76a8710007a60a65ACFF71');
+        ga('ravmesser_landingpages.send', 'pageview');
+        */
+    </script>
+    <!--<script async src='https://www.google-analytics.com/analytics.js'></script>-->
+    <!-- End Google Analytics --></head> <body data-content-language="" class="RDS100213 a RMCONTENT RMPAGE RDUI_6723190_1706648851 version4">      <div id="body" class="entityType_general general desktop ">  <div style="overflow: hidden !important; height: 0px !important; width: 0px !important;">.</div>  <div id="content">  <div  class=" multyparent bodyarea_multyelements" style="">  <div class="inner_bodyarea_multyelements">  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyserial  multy  name_area name_area-wide name_area   sonof_ sonof_name_ after_ after_name_ before_multyserial before_name_area-wide-computerbackgroundimage-top  before_name_area before_name_area-wide before_name_area-wide-computerbackgroundimage before_name_area-wide-computerbackgroundimage-top display_tag_conf_multy_private display_tag_conf_multy_view_all"  style="background-color:#1dcd2c ;background-image:none; " data-multy-unique-id="" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style="">  <div  class=" multyparent multyelements" style="">  <div data-responsive_settings="" role='heading' aria-level='1' class="overridestyle t0 t36 t2419273 multytext  multy  name_text name_text-title_assistant name_text   sonof_multyserial sonof_name_area-wide sonof_name_area sonof_multyserial  sonof_name_area sonof_name_area-wide after_ after_name_ before_multyform before_name_form-horizontal_square-inherited  before_name_form before_name_form-horizontal_square before_name_form-horizontal_square-inherited display_tag_multy_text_regular display_tag_conf_multy_view_all"  style=" " data-multy-unique-id="" >  <div class="multyinner" style=""> <div style="" class=" text_text text"><p dir="ltr"><span style="font-size: 28px;"><span class="unbold">Hamas Fetish!<br />Join our webinar on how to dominate </span>Jewish kidnapped girls in Gaza<span class="unbold">. <span style="background-color: #ff0000;">In the video below</span>, are some of the things we are going to teach in the webinar.<br />Allah Akbar.</span></span></p></div> </div>  </div>  <div data-responsive_settings="range(0,292) {{{
+enableAutoScaler({targetWidth:292});
+}}}
+range(293,10000) {{{
+disableAutoScaler();
+}}}
+range(0,400) {{{
+setClass(&quot;display_tag_multyform_verticalform&quot;);
+removeClass(&quot;display_tag_multyform_horizontalform&quot;);
+}}}
+range(401,10000) {{{
+removeClass(&quot;display_tag_multyform_verticalform&quot;);
+setClass(&quot;display_tag_multyform_horizontalform&quot;);
+}}}
+
+condition(range(0,550) &amp;&amp; formFieldsCount() &gt; 1) {{{
+setClass(&quot;display_tag_multyform_verticalform&quot;);
+removeClass(&quot;display_tag_multyform_horizontalform&quot;);
+}}}
+condition(range(0,600) &amp;&amp; formFieldsCount() &gt; 2) {{{
+setClass(&quot;display_tag_multyform_verticalform&quot;);
+removeClass(&quot;display_tag_multyform_horizontalform&quot;);
+}}}
+condition(range(0,700) &amp;&amp; formFieldsCount() &gt; 3) {{{
+setClass(&quot;display_tag_multyform_verticalform&quot;);
+removeClass(&quot;display_tag_multyform_horizontalform&quot;);
+}}}
+condition(range(0,10000) &amp;&amp; formFieldsCount() &gt; 4) {{{
+setClass(&quot;display_tag_multyform_verticalform&quot;);
+removeClass(&quot;display_tag_multyform_horizontalform&quot;);
+}}}"  class="overridestyle t0 t36 t2419273 multyform  multy  name_form name_form-horizontal_square name_form-horizontal_square-inherited name_form   sonof_multyserial sonof_name_area-wide sonof_name_area sonof_multyserial  sonof_name_area sonof_name_area-wide after_multytext after_name_text-title_assistant  after_name_text after_name_text-title_assistant before_multyimage before_name_image-effect-A_regular  before_name_image before_name_image-effect before_name_image-effect-A_regular display_tag_multyform_horizontalform display_tag_conf_multy_view_all"  style="background-color:#f9441f ;background-image:none; " data-multy-unique-id="jsid10000001" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style=""> <div class="formBody"> <form field-count="2" class="form" action="https://ravxx-subscriber-v1.ravpage.co.il/" method="post" >  <div  class=" multyparent multyfields" style="">  <div class="inner_multyfields">  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyfield  multy  name_ name_   sonof_multyform sonof_name_form-horizontal_square-inherited sonof_name_form sonof_multyform  sonof_name_form sonof_name_form-horizontal_square sonof_name_form-horizontal_square-inherited after_ after_name_ before_multyfield before_name_  before_name_"  style=" " data-multy-unique-id="" >  <div class="multyinner" style="">  <div class="field fieldname_subscribers_email fieldtype_singlelineText nolabel">  <input aria-label="Email" name="fields[subscribers_email]" type="email" placeholder="Email" class="email required " value="">  </div>  </div>  </div>  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyfield  multy  name_ name_   sonof_multyform sonof_name_form-horizontal_square-inherited sonof_name_form sonof_multyform  sonof_name_form sonof_name_form-horizontal_square sonof_name_form-horizontal_square-inherited after_multyfield after_name_  after_name_ before_ before_name_"  style=" " data-multy-unique-id="" >  <div class="multyinner" style="">  <div class="field fieldname_subscribers_name fieldtype_singlelineText nolabel">  <input aria-label="Fake name" name="fields[subscribers_name]" type="text" placeholder="Fake name" class="name " value="">  </div>  </div>  </div>  </div>  </div>   <div class="submitbuttonbox">  <a href="#" class="submitButton" style="background-color:#00b805 !important;border-color:#00b805 !important;color:#000000 !important"> <div class="rightPart"></div> <input type="submit" class="textPart" name="none" value="Sign in"> <div class="leftPart"></div> <div class="clear"></div> </a>  </div> <input type="hidden" name="__ravxx_url__" value="http://bebetter.ravpage.co.il/HamasFetish"> <input type="hidden" name="__ravxx_source_info__" value="{&quot;public_id&quot;:&quot;531a61d87cf36bc21e76a8710007a60a65ACFF71&quot;,&quot;normalized_url&quot;:&quot;http:\/\/bebetter.ravpage.co.il\/HamasFetish&quot;,&quot;url&quot;:&quot;http:\/\/bebetter.ravpage.co.il\/HamasFetish&quot;,&quot;group&quot;:&quot;9a7f96fcd071ab6828530e123ab8adc3&quot;}"> <input type="hidden" name="form_id" value="2508795"> <input type="hidden" name="encoding" value="utf-8"> </form> <div class="clear"></div> </div> </div>  </div>  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyimage  multy  name_image name_image-effect name_image-effect-A_regular name_image  center sonof_multyserial sonof_name_area-wide sonof_name_area sonof_multyserial  sonof_name_area sonof_name_area-wide after_multyform after_name_form-horizontal_square-inherited  after_name_form after_name_form-horizontal_square after_name_form-horizontal_square-inherited before_multytext before_name_text-title_assistant  before_name_text before_name_text-title_assistant display_tag_conf_multy_view_all"  style=" " data-multy-unique-id="" >  <div class="multyinner" style="">  <div class="inputImageControl imageControl" style="width:871px;height:420px;">  <a href="https://www.youtube.com/watch?v=4FLciWhphG4" target="_blank">  <img src="//images.ravpages.co.il/xsite_resources/user_content/33/c4/18/49/33c41849eeb21c9f430ae392aa25b1b0/images/0855bc2bb15f15185abd500dacb1b2d6_871X420.jpg?cc=8&convert=webp&ver=3.12&rxc=1705555702" class="imageContainer inputImageControl imageControl" style="width:871px;" alt="" title=""> </a>  </div>  </div>  </div>  <div data-responsive_settings="" role='heading' aria-level='1' class="overridestyle t0 t36 t2419273 multytext  multy  name_text name_text-title_assistant name_text   sonof_multyserial sonof_name_area-wide sonof_name_area sonof_multyserial  sonof_name_area sonof_name_area-wide after_multyimage after_name_image-effect-A_regular  after_name_image after_name_image-effect after_name_image-effect-A_regular before_ before_name_ display_tag_multy_text_regular display_tag_conf_multy_view_all"  style=" " data-multy-unique-id="" >  <div class="multyinner" style=""> <div style="" class=" text_text text"><p dir="ltr" style="text-align: center;"><span style="font-size: 24px;">This is the first webinar in the world for people who have a fetish for raping Jewish girls.</span></p></div> </div>  </div>  </div>  </div>  </div>  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyserial  multy  name_area name_area-wide name_area-wide-computerbackgroundimage name_area-wide-computerbackgroundimage-top name_area   sonof_ sonof_name_ after_multyserial after_name_area-wide  after_name_area after_name_area-wide before_multyserial before_name_area-wide-background_color-gray-top  before_name_area before_name_area-wide before_name_area-wide-background_color before_name_area-wide-background_color-gray before_name_area-wide-background_color-gray-top display_tag_conf_multy_private display_tag_conf_multy_view_all"  style="background-color:#fcdee9 ;background-image:none;background-size:cover;background-repeat:repeat;background-position-x:50%;background-position-y:50%;background-attachment:scroll; " data-multy-unique-id="" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style="">  <div  class=" multyparent multyelements" style="">  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyimage  multy  name_image name_image-effect name_image-effect-A_regular name_image  center sonof_multyserial sonof_name_area-wide-computerbackgroundimage-top sonof_name_area sonof_multyserial  sonof_name_area sonof_name_area-wide sonof_name_area-wide-computerbackgroundimage sonof_name_area-wide-computerbackgroundimage-top after_ after_name_ before_multytext before_name_text-title_assistant  before_name_text before_name_text-title_assistant display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" >  <div class="multyinner" style="padding-top:0px ;padding-bottom:10px ;">  <div class="inputImageControl imageControl" style="width:352px;height:216px;">   <img src="//images.ravpages.co.il/xsite_resources/user_content/33/c4/18/49/33c41849eeb21c9f430ae392aa25b1b0/images/d4e8ffb2e4ba076db064d1234b313b2e_352X216.png?cc=8&convert=webp&ver=3.12&rxc=1705555702" class="imageContainer inputImageControl imageControl" style="width:352px;" alt="" title="">  </div>  </div>  </div>  <div data-responsive_settings="" role='heading' aria-level='1' class="overridestyle t0 t36 t2419273 multytext  multy  name_text name_text-title_assistant name_text   sonof_multyserial sonof_name_area-wide-computerbackgroundimage-top sonof_name_area sonof_multyserial  sonof_name_area sonof_name_area-wide sonof_name_area-wide-computerbackgroundimage sonof_name_area-wide-computerbackgroundimage-top after_multyimage after_name_image-effect-A_regular  after_name_image after_name_image-effect after_name_image-effect-A_regular before_multytext before_name_text-title_assistant  before_name_text before_name_text-title_assistant display_tag_multy_text_regular display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style="padding-top:0px ;"> <div style="" class=" text_text text"><p dir="ltr" style="text-align: center;"><span style="font-size: 28px;">This is not a rape! It is a legitimate resistence of our people, using rape. We call it <span style="background-color: #ff0000;">RAPESISTENCE</span>. According to our best of knowledge the silence of women's rights organizations shows it is LEGAL.</span></p></div> </div>  </div>  <div data-responsive_settings="" role='heading' aria-level='1' class="overridestyle t0 t36 t2419273 multytext  multy  name_text name_text-title_assistant name_text   sonof_multyserial sonof_name_area-wide-computerbackgroundimage-top sonof_name_area sonof_multyserial  sonof_name_area sonof_name_area-wide sonof_name_area-wide-computerbackgroundimage sonof_name_area-wide-computerbackgroundimage-top after_multytext after_name_text-title_assistant  after_name_text after_name_text-title_assistant before_multytext before_name_text-title_assistant  before_name_text before_name_text-title_assistant display_tag_multy_text_regular display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style="padding-top:0px ;padding-bottom:0px ;"> <div style="" class=" text_text text"><p dir="ltr"><span class="underline" style="font-size: 42px;">What will we learn in the webinar?</span></p></div> </div>  </div>  <div data-responsive_settings="" role='heading' aria-level='1' class="overridestyle t0 t36 t2419273 multytext  multy  name_text name_text-title_assistant name_text   sonof_multyserial sonof_name_area-wide-computerbackgroundimage-top sonof_name_area sonof_multyserial  sonof_name_area sonof_name_area-wide sonof_name_area-wide-computerbackgroundimage sonof_name_area-wide-computerbackgroundimage-top after_multytext after_name_text-title_assistant  after_name_text after_name_text-title_assistant before_multycol before_name_columns-inherited  before_name_columns before_name_columns-inherited display_tag_multy_text_regular display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style="padding-top:5px ;"> <div style="" class=" text_text text"><p style="text-align: left; direction: ltr;"><span style="font-size: 28px;">* How to rapesist without having&nbsp;conscience problems?</span></p>
+    <p style="text-align: left; direction: ltr;"><span style="font-size: 28px;">* How to not leave videos or evidence which will be a proof against our legitimate rapesistence?</span></p>
+    <p style="text-align: left; direction: ltr;"><span style="font-size: 28px;">*&nbsp;What nutritional supplements to consume in order to be able to rapesist enough women?</span></p>
+    <p style="text-align: left; direction: ltr;"><span style="font-size: 28px;">* Importance of using condoms in order not to create more Zionists by mistake.</span></p></div> </div>  </div>  </div>  </div>  </div>  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyserial  multy  name_area name_area-wide name_area-wide-background_color name_area-wide-background_color-gray name_area-wide-background_color-gray-top name_area   sonof_ sonof_name_ after_multyserial after_name_area-wide-computerbackgroundimage-top  after_name_area after_name_area-wide after_name_area-wide-computerbackgroundimage after_name_area-wide-computerbackgroundimage-top before_multyserial before_name_area-wide-background_color-gray-top  before_name_area before_name_area-wide before_name_area-wide-background_color before_name_area-wide-background_color-gray before_name_area-wide-background_color-gray-top display_tag_conf_multy_view_all"  style="background-color:#33bb1b ;background-image:none; " data-multy-unique-id="" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style="">  <div  class=" multyparent multyelements" style="">  <div data-responsive_settings="" role='heading' aria-level='1' class="overridestyle t0 t36 t2419273 multytext  multy  name_text name_text-title_assistant name_text   sonof_multyserial sonof_name_area-wide-background_color-gray-top sonof_name_area sonof_multyserial  sonof_name_area sonof_name_area-wide sonof_name_area-wide-background_color sonof_name_area-wide-background_color-gray sonof_name_area-wide-background_color-gray-top after_ after_name_ before_multygallery before_name_gallery-simple-four  before_name_gallery before_name_gallery-simple before_name_gallery-simple-four display_tag_multy_text_regular display_tag_conf_multy_view_all"  style=" " data-multy-unique-id="" >  <div class="multyinner" style=""> <div style="" class=" text_text text"><p dir="ltr" style="text-align: center;"><span style="font-size: 42px;">People who recommend this webinar:</span></p></div> </div>  </div>  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multygallery  multy  name_gallery name_gallery-simple name_gallery-simple-four name_gallery  quartersize sonof_multyserial sonof_name_area-wide-background_color-gray-top sonof_name_area sonof_multyserial  sonof_name_area sonof_name_area-wide sonof_name_area-wide-background_color sonof_name_area-wide-background_color-gray sonof_name_area-wide-background_color-gray-top after_multytext after_name_text-title_assistant  after_name_text after_name_text-title_assistant before_multytext before_name_text-title_assistant  before_name_text before_name_text-title_assistant display_tag_conf_sonof_multy_retain_editor_width display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style="padding-bottom:0px ;">  <div  class=" multyparent multyelements" style="">  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyserial  multy  name_serialunlocked name_serialunlocked-gallery_container name_serialunlocked   sonof_multygallery sonof_name_gallery-simple-four sonof_name_gallery sonof_multygallery  sonof_name_gallery sonof_name_gallery-simple sonof_name_gallery-simple-four after_ after_name_ before_multyserial before_name_serialunlocked-gallery_container  before_name_serialunlocked before_name_serialunlocked-gallery_container display_tag_conf_multy_view_all backgroundColorInMultyInner paddingInOutsideMulty"  style="width:246px; " data-multy-unique-id="" >  <div class="multyinner" style="">  <div  class=" multyparent multyelements" style="">  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyimage  multy  name_image name_image-effect name_image-effect-A_regular name_image  center sonof_multyserial sonof_name_serialunlocked-gallery_container sonof_name_serialunlocked sonof_multyserial  sonof_name_serialunlocked sonof_name_serialunlocked-gallery_container after_ after_name_ before_multytext before_name_text-header  before_name_text before_name_text-header display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" >  <div class="multyinner" style="padding-bottom:0px ;">  <div class="inputImageControl imageControl" style="width:206px;height:176px;">   <img src="//images.ravpages.co.il/xsite_resources/user_content/33/c4/18/49/33c41849eeb21c9f430ae392aa25b1b0/images/af89010ec6b392ded1dade692cae7ce5_206X176.jpg?cc=8&convert=webp&ver=3.12&rxc=1705555702" class="imageContainer inputImageControl imageControl" style="width:206px;" alt="" title="">  </div>  </div>  </div>  <div data-responsive_settings="" role='heading' aria-level='1' class="overridestyle t0 t36 t2419273 multytext  multy  name_text name_text-header name_text   sonof_multyserial sonof_name_serialunlocked-gallery_container sonof_name_serialunlocked sonof_multyserial  sonof_name_serialunlocked sonof_name_serialunlocked-gallery_container after_multyimage after_name_image-effect-A_regular  after_name_image after_name_image-effect after_name_image-effect-A_regular before_ before_name_ display_tag_multy_text_header display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style="padding-top:0px ;"> <div style="" class=" text_text text"><h1 dir="ltr" style="text-align: left;"><span style="font-size: 18px;">Yahya Sinwar - leader of Hamas. A well known rapesister.<br />Born in Egypt in 1962. Well respected in the rapesistence community. Famose moto: No Jews, no problem.</span></h1>
+    <p>&nbsp;</p></div> </div>  </div>  </div>  </div>  </div>  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyserial  multy  name_serialunlocked name_serialunlocked-gallery_container name_serialunlocked   sonof_multygallery sonof_name_gallery-simple-four sonof_name_gallery sonof_multygallery  sonof_name_gallery sonof_name_gallery-simple sonof_name_gallery-simple-four after_multyserial after_name_serialunlocked-gallery_container  after_name_serialunlocked after_name_serialunlocked-gallery_container before_multyserial before_name_serialunlocked-gallery_container  before_name_serialunlocked before_name_serialunlocked-gallery_container display_tag_conf_multy_view_all backgroundColorInMultyInner paddingInOutsideMulty"  style="width:246px; " data-multy-unique-id="" >  <div class="multyinner" style="">  <div  class=" multyparent multyelements" style="">  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyimage  multy  name_image name_image-effect name_image-effect-A_regular name_image  center sonof_multyserial sonof_name_serialunlocked-gallery_container sonof_name_serialunlocked sonof_multyserial  sonof_name_serialunlocked sonof_name_serialunlocked-gallery_container after_ after_name_ before_multytext before_name_text-header  before_name_text before_name_text-header display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" >  <div class="multyinner" style="padding-bottom:0px ;">  <div class="inputImageControl imageControl" style="width:205px;height:175px;">   <img src="//images.ravpages.co.il/xsite_resources/user_content/33/c4/18/49/33c41849eeb21c9f430ae392aa25b1b0/images/d0179ab28e603fac53338bab8b950814_205X175.jpg?cc=8&convert=webp&ver=3.12&rxc=1705555702" class="imageContainer inputImageControl imageControl" style="width:205px;" alt="" title="">  </div>  </div>  </div>  <div data-responsive_settings="" role='heading' aria-level='1' class="overridestyle t0 t36 t2419273 multytext  multy  name_text name_text-header name_text   sonof_multyserial sonof_name_serialunlocked-gallery_container sonof_name_serialunlocked sonof_multyserial  sonof_name_serialunlocked sonof_name_serialunlocked-gallery_container after_multyimage after_name_image-effect-A_regular  after_name_image after_name_image-effect after_name_image-effect-A_regular before_ before_name_ display_tag_multy_text_header display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style="padding-top:0px ;"> <div style="" class=" text_text text"><h1 style="text-align: left; direction: ltr;"><span style="font-size: 18px;">Ali Khamenei - leader of Iran and sponsor of the rapesistence.&nbsp;He is unfairly called the perpetrator of terrorism, when in fact he sponsors terrorism for peace.</span></h1></div> </div>  </div>  </div>  </div>  </div>  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyserial  multy  name_serialunlocked name_serialunlocked-gallery_container name_serialunlocked   sonof_multygallery sonof_name_gallery-simple-four sonof_name_gallery sonof_multygallery  sonof_name_gallery sonof_name_gallery-simple sonof_name_gallery-simple-four after_multyserial after_name_serialunlocked-gallery_container  after_name_serialunlocked after_name_serialunlocked-gallery_container before_multyserial before_name_serialunlocked-gallery_container  before_name_serialunlocked before_name_serialunlocked-gallery_container display_tag_conf_multy_view_all backgroundColorInMultyInner paddingInOutsideMulty"  style="width:246px; " data-multy-unique-id="" >  <div class="multyinner" style="">  <div  class=" multyparent multyelements" style="">  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyimage  multy  name_image name_image-effect name_image-effect-A_regular name_image  center sonof_multyserial sonof_name_serialunlocked-gallery_container sonof_name_serialunlocked sonof_multyserial  sonof_name_serialunlocked sonof_name_serialunlocked-gallery_container after_ after_name_ before_multytext before_name_text-header  before_name_text before_name_text-header display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" >  <div class="multyinner" style="padding-bottom:0px ;">  <div class="inputImageControl imageControl" style="width:204px;height:174px;">   <img src="//images.ravpages.co.il/xsite_resources/user_content/33/c4/18/49/33c41849eeb21c9f430ae392aa25b1b0/images/f3a59a7930ae81fc682b8a3b70f7ff92_204X174.jpg?cc=8&convert=webp&ver=3.12&rxc=1705555702" class="imageContainer inputImageControl imageControl" style="width:204px;" alt="" title="">  </div>  </div>  </div>  <div data-responsive_settings="" role='heading' aria-level='1' class="overridestyle t0 t36 t2419273 multytext  multy  name_text name_text-header name_text   sonof_multyserial sonof_name_serialunlocked-gallery_container sonof_name_serialunlocked sonof_multyserial  sonof_name_serialunlocked sonof_name_serialunlocked-gallery_container after_multyimage after_name_image-effect-A_regular  after_name_image after_name_image-effect after_name_image-effect-A_regular before_ before_name_ display_tag_multy_text_header display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style="padding-top:0px ;"> <div style="" class=" text_text text"><h1 style="text-align: left; direction: ltr;"><span style="font-size: 18px;">Ismail Haniyeh - amazing businessman who can run a war from far distence, defeatig the Zionists while eating black kaviar in hotels in Qatar.&nbsp;<br />Billionair and famous rapesister.</span></h1></div> </div>  </div>  </div>  </div>  </div>  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyserial  multy  name_serialunlocked name_serialunlocked-gallery_container name_serialunlocked   sonof_multygallery sonof_name_gallery-simple-four sonof_name_gallery sonof_multygallery  sonof_name_gallery sonof_name_gallery-simple sonof_name_gallery-simple-four after_multyserial after_name_serialunlocked-gallery_container  after_name_serialunlocked after_name_serialunlocked-gallery_container before_ before_name_ display_tag_conf_multy_view_all backgroundColorInMultyInner paddingInOutsideMulty"  style="width:246px; " data-multy-unique-id="" >  <div class="multyinner" style="">  <div  class=" multyparent multyelements" style="">  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyimage  multy  name_image name_image-effect name_image-effect-A_regular name_image  center sonof_multyserial sonof_name_serialunlocked-gallery_container sonof_name_serialunlocked sonof_multyserial  sonof_name_serialunlocked sonof_name_serialunlocked-gallery_container after_ after_name_ before_multytext before_name_text-header  before_name_text before_name_text-header display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" >  <div class="multyinner" style="padding-bottom:0px ;">  <div class="inputImageControl imageControl" style="width:206px;height:176px;">   <img src="//images.ravpages.co.il/xsite_resources/user_content/33/c4/18/49/33c41849eeb21c9f430ae392aa25b1b0/images/9e0f9d4f801825ee72922fa576212996_206X176.jpg?cc=8&convert=webp&ver=3.12&rxc=1705555702" class="imageContainer inputImageControl imageControl" style="width:206px;" alt="" title="">  </div>  </div>  </div>  <div data-responsive_settings="" role='heading' aria-level='1' class="overridestyle t0 t36 t2419273 multytext  multy  name_text name_text-header name_text   sonof_multyserial sonof_name_serialunlocked-gallery_container sonof_name_serialunlocked sonof_multyserial  sonof_name_serialunlocked sonof_name_serialunlocked-gallery_container after_multyimage after_name_image-effect-A_regular  after_name_image after_name_image-effect after_name_image-effect-A_regular before_ before_name_ display_tag_multy_text_header display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style="padding-top:0px ;"> <div style="" class=" text_text text"><h1 style="text-align: left; direction: ltr;"><span style="font-size: 18px;">Adolf Hitler - even though he is not muslim, he served as the spiritual father for our movement. A pure islamic world with no Jews.&nbsp;</span></h1></div> </div>  </div>  </div>  </div>  </div> <div class='multygalleryplaceholder'></div><div class='multygalleryplaceholder'></div><div class='multygalleryplaceholder'></div><div class='multygalleryplaceholder'></div><div class='multygalleryplaceholder'></div><div class='multygalleryplaceholder'></div><div class='multygalleryplaceholder'></div><div class='multygalleryplaceholder'></div><div class='multygalleryplaceholder'></div><div class='multygalleryplaceholder'></div> </div> <div class='clear'></div> </div>  </div>  <div data-responsive_settings="" role='heading' aria-level='1' class="overridestyle t0 t36 t2419273 multytext  multy  name_text name_text-title_assistant name_text   sonof_multyserial sonof_name_area-wide-background_color-gray-top sonof_name_area sonof_multyserial  sonof_name_area sonof_name_area-wide sonof_name_area-wide-background_color sonof_name_area-wide-background_color-gray sonof_name_area-wide-background_color-gray-top after_multygallery after_name_gallery-simple-four  after_name_gallery after_name_gallery-simple after_name_gallery-simple-four before_multyimage before_name_image-effect-A_regular  before_name_image before_name_image-effect before_name_image-effect-A_regular display_tag_multy_text_regular display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style="padding-top:0px ;padding-bottom:10px ;"> <div style="" class=" text_text text"><p><span class="underline" style="font-size: 42px;">Support us with their silence</span></p></div> </div>  </div>  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyimage  multy  name_image name_image-effect name_image-effect-A_regular name_image  center sonof_multyserial sonof_name_area-wide-background_color-gray-top sonof_name_area sonof_multyserial  sonof_name_area sonof_name_area-wide sonof_name_area-wide-background_color sonof_name_area-wide-background_color-gray sonof_name_area-wide-background_color-gray-top after_multytext after_name_text-title_assistant  after_name_text after_name_text-title_assistant before_multycol before_name_columns-subject_gallery  before_name_columns before_name_columns-subject_gallery display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" >  <div class="multyinner" style="padding-top:5px ;">  <div class="inputImageControl imageControl" style="width:984px;height:419px;">   <img src="//images.ravpages.co.il/xsite_resources/user_content/33/c4/18/49/33c41849eeb21c9f430ae392aa25b1b0/images/93454d36ce873e9b29c6b03026e4ae00_984X419.png?cc=8&convert=webp&ver=3.12&rxc=1705555702" class="imageContainer inputImageControl imageControl" style="width:984px;" alt="" title="">  </div>  </div>  </div>  </div>  </div>  </div>  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyserial  multy  name_area name_area-wide name_area-wide-background_color name_area-wide-background_color-gray name_area-wide-background_color-gray-top name_area   sonof_ sonof_name_ after_multyserial after_name_area-wide-background_color-gray-top  after_name_area after_name_area-wide after_name_area-wide-background_color after_name_area-wide-background_color-gray after_name_area-wide-background_color-gray-top before_ before_name_ display_tag_conf_multy_view_all"  style="background-color:#fcf8f9 ;background-image:none; " data-multy-unique-id="" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style="">  <div  class=" multyparent multyelements" style="">  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multytext  multy  name_text name_text-grey_assistant name_text   sonof_multyserial sonof_name_area-wide-background_color-gray-top sonof_name_area sonof_multyserial  sonof_name_area sonof_name_area-wide sonof_name_area-wide-background_color sonof_name_area-wide-background_color-gray sonof_name_area-wide-background_color-gray-top after_ after_name_ before_multygallery before_name_gallery-simple-four  before_name_gallery before_name_gallery-simple before_name_gallery-simple-four display_tag_multy_text_regular display_tag_conf_multy_view_all"  style=" " data-multy-unique-id="" >  <div class="multyinner" style=""> <div style="" class=" text_text text"><p><span class="bold" style="color: #000000; font-size: 30px;">:Recommendations</span></p></div> </div>  </div>  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multygallery  multy  name_gallery name_gallery-simple name_gallery-simple-four name_gallery  quartersize sonof_multyserial sonof_name_area-wide-background_color-gray-top sonof_name_area sonof_multyserial  sonof_name_area sonof_name_area-wide sonof_name_area-wide-background_color sonof_name_area-wide-background_color-gray sonof_name_area-wide-background_color-gray-top after_multytext after_name_text-grey_assistant  after_name_text after_name_text-grey_assistant before_multytext before_name_text-title_assistant  before_name_text before_name_text-title_assistant display_tag_conf_sonof_multy_retain_editor_width display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style="padding-bottom:0px ;">  <div  class=" multyparent multyelements" style="">  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyserial  multy  name_serialunlocked name_serialunlocked-gallery_container name_serialunlocked   sonof_multygallery sonof_name_gallery-simple-four sonof_name_gallery sonof_multygallery  sonof_name_gallery sonof_name_gallery-simple sonof_name_gallery-simple-four after_ after_name_ before_multyserial before_name_serialunlocked-gallery_container  before_name_serialunlocked before_name_serialunlocked-gallery_container display_tag_conf_multy_view_all backgroundColorInMultyInner paddingInOutsideMulty"  style="width:246px; " data-multy-unique-id="" >  <div class="multyinner" style="">  <div  class=" multyparent multyelements" style="">  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyimage  multy  name_image name_image-effect name_image-effect-A_regular name_image  center sonof_multyserial sonof_name_serialunlocked-gallery_container sonof_name_serialunlocked sonof_multyserial  sonof_name_serialunlocked sonof_name_serialunlocked-gallery_container after_ after_name_ before_multytext before_name_text-header  before_name_text before_name_text-header display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" >  <div class="multyinner" style="padding-bottom:0px ;">  <div class="inputImageControl imageControl" style="width:206px;height:187px;">   <img src="//images.ravpages.co.il/xsite_resources/user_content/33/c4/18/49/33c41849eeb21c9f430ae392aa25b1b0/images/0cb935876c1f138736141940d299ef33_206X187.jpg?cc=8&convert=webp&ver=3.12&rxc=1705555702" class="imageContainer inputImageControl imageControl" style="width:206px;" alt="" title="">  </div>  </div>  </div>  <div data-responsive_settings="" role='heading' aria-level='1' class="overridestyle t0 t36 t2419273 multytext  multy  name_text name_text-header name_text   sonof_multyserial sonof_name_serialunlocked-gallery_container sonof_name_serialunlocked sonof_multyserial  sonof_name_serialunlocked sonof_name_serialunlocked-gallery_container after_multyimage after_name_image-effect-A_regular  after_name_image after_name_image-effect after_name_image-effect-A_regular before_ before_name_ display_tag_multy_text_header display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style="padding-top:0px ;"> <div style="" class=" text_text text"><h1 dir="ltr" style="text-align: left;"><span style="font-size: 18px;">Walid: "This is a great webinar which made me a better rapesister!"</span></h1></div> </div>  </div>  </div>  </div>  </div>  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyserial  multy  name_serialunlocked name_serialunlocked-gallery_container name_serialunlocked   sonof_multygallery sonof_name_gallery-simple-four sonof_name_gallery sonof_multygallery  sonof_name_gallery sonof_name_gallery-simple sonof_name_gallery-simple-four after_multyserial after_name_serialunlocked-gallery_container  after_name_serialunlocked after_name_serialunlocked-gallery_container before_multyserial before_name_serialunlocked-gallery_container  before_name_serialunlocked before_name_serialunlocked-gallery_container display_tag_conf_multy_view_all backgroundColorInMultyInner paddingInOutsideMulty"  style="width:246px; " data-multy-unique-id="" >  <div class="multyinner" style="">  <div  class=" multyparent multyelements" style="">  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyimage  multy  name_image name_image-effect name_image-effect-A_regular name_image  center sonof_multyserial sonof_name_serialunlocked-gallery_container sonof_name_serialunlocked sonof_multyserial  sonof_name_serialunlocked sonof_name_serialunlocked-gallery_container after_ after_name_ before_multytext before_name_text-header  before_name_text before_name_text-header display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" >  <div class="multyinner" style="padding-bottom:0px ;">  <div class="inputImageControl imageControl" style="width:205px;height:186px;">   <img src="//images.ravpages.co.il/xsite_resources/user_content/33/c4/18/49/33c41849eeb21c9f430ae392aa25b1b0/images/645e90b1e3d56476a506fcb5f4a77eda_205X186.jpg?cc=8&convert=webp&ver=3.12&rxc=1705555702" class="imageContainer inputImageControl imageControl" style="width:205px;" alt="" title="">  </div>  </div>  </div>  <div data-responsive_settings="" role='heading' aria-level='1' class="overridestyle t0 t36 t2419273 multytext  multy  name_text name_text-header name_text   sonof_multyserial sonof_name_serialunlocked-gallery_container sonof_name_serialunlocked sonof_multyserial  sonof_name_serialunlocked sonof_name_serialunlocked-gallery_container after_multyimage after_name_image-effect-A_regular  after_name_image after_name_image-effect after_name_image-effect-A_regular before_ before_name_ display_tag_multy_text_header display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style="padding-top:0px ;"> <div style="" class=" text_text text"><h1 style="text-align: left; direction: ltr;"><span style="font-size: 18px;">Mohammed: "I could never reach the AMAZING&nbsp;performance of October 7th without this webinar. If you like or hate Jewish girls, this webinar is for you!"</span></h1></div> </div>  </div>  </div>  </div>  </div>  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyserial  multy  name_serialunlocked name_serialunlocked-gallery_container name_serialunlocked   sonof_multygallery sonof_name_gallery-simple-four sonof_name_gallery sonof_multygallery  sonof_name_gallery sonof_name_gallery-simple sonof_name_gallery-simple-four after_multyserial after_name_serialunlocked-gallery_container  after_name_serialunlocked after_name_serialunlocked-gallery_container before_multyserial before_name_serialunlocked-gallery_container  before_name_serialunlocked before_name_serialunlocked-gallery_container display_tag_conf_multy_view_all backgroundColorInMultyInner paddingInOutsideMulty"  style="width:246px; " data-multy-unique-id="" >  <div class="multyinner" style="">  <div  class=" multyparent multyelements" style="">  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyimage  multy  name_image name_image-effect name_image-effect-A_regular name_image  center sonof_multyserial sonof_name_serialunlocked-gallery_container sonof_name_serialunlocked sonof_multyserial  sonof_name_serialunlocked sonof_name_serialunlocked-gallery_container after_ after_name_ before_multytext before_name_text-header  before_name_text before_name_text-header display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" >  <div class="multyinner" style="padding-bottom:0px ;">  <div class="inputImageControl imageControl" style="width:204px;height:185px;">   <img src="//images.ravpages.co.il/xsite_resources/user_content/33/c4/18/49/33c41849eeb21c9f430ae392aa25b1b0/images/4d364a572ac9f5982106d9d3291d0511_204X185.jpg?cc=8&convert=webp&ver=3.12&rxc=1705555702" class="imageContainer inputImageControl imageControl" style="width:204px;" alt="" title="">  </div>  </div>  </div>  <div data-responsive_settings="" role='heading' aria-level='1' class="overridestyle t0 t36 t2419273 multytext  multy  name_text name_text-header name_text   sonof_multyserial sonof_name_serialunlocked-gallery_container sonof_name_serialunlocked sonof_multyserial  sonof_name_serialunlocked sonof_name_serialunlocked-gallery_container after_multyimage after_name_image-effect-A_regular  after_name_image after_name_image-effect after_name_image-effect-A_regular before_ before_name_ display_tag_multy_text_header display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style="padding-top:0px ;"> <div style="" class=" text_text text"><h1 style="text-align: left; direction: ltr;"><span style="font-size: 18px;">Ahmed: "This picture of mine with my loot, is because of this great webinar. I have my personal Israeli girl to rapesist for a year now."</span></h1></div> </div>  </div>  </div>  </div>  </div>  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyserial  multy  name_serialunlocked name_serialunlocked-gallery_container name_serialunlocked   sonof_multygallery sonof_name_gallery-simple-four sonof_name_gallery sonof_multygallery  sonof_name_gallery sonof_name_gallery-simple sonof_name_gallery-simple-four after_multyserial after_name_serialunlocked-gallery_container  after_name_serialunlocked after_name_serialunlocked-gallery_container before_ before_name_ display_tag_conf_multy_view_all backgroundColorInMultyInner paddingInOutsideMulty"  style="width:246px; " data-multy-unique-id="" >  <div class="multyinner" style="">  <div  class=" multyparent multyelements" style="">  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multyimage  multy  name_image name_image-effect name_image-effect-A_regular name_image  center sonof_multyserial sonof_name_serialunlocked-gallery_container sonof_name_serialunlocked sonof_multyserial  sonof_name_serialunlocked sonof_name_serialunlocked-gallery_container after_ after_name_ before_multytext before_name_text-header  before_name_text before_name_text-header display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" >  <div class="multyinner" style="padding-bottom:0px ;">  <div class="inputImageControl imageControl" style="width:206px;height:176px;">   <img src="//images.ravpages.co.il/xsite_resources/user_content/33/c4/18/49/33c41849eeb21c9f430ae392aa25b1b0/images/9e0f9d4f801825ee72922fa576212996_206X176.jpg?cc=8&convert=webp&ver=3.12&rxc=1705555702" class="imageContainer inputImageControl imageControl" style="width:206px;" alt="" title="">  </div>  </div>  </div>  <div data-responsive_settings="" role='heading' aria-level='1' class="overridestyle t0 t36 t2419273 multytext  multy  name_text name_text-header name_text   sonof_multyserial sonof_name_serialunlocked-gallery_container sonof_name_serialunlocked sonof_multyserial  sonof_name_serialunlocked sonof_name_serialunlocked-gallery_container after_multyimage after_name_image-effect-A_regular  after_name_image after_name_image-effect after_name_image-effect-A_regular before_ before_name_ display_tag_multy_text_header display_tag_conf_multy_view_all"  style="background-image:none; " data-multy-unique-id="" > <div style="background-color:#000;opacity:0;" class="filteroverlay"></div> <div class="multyinner" style="padding-top:0px ;"> <div style="" class=" text_text text"><h1 style="text-align: left; direction: ltr;"><span style="font-size: 18px;">Adolf Hitler: "I am dead now, but if I were alive, I would be proud of you. You are the true followers of my path".</span></h1></div> </div>  </div>  </div>  </div>  </div> <div class='multygalleryplaceholder'></div><div class='multygalleryplaceholder'></div><div class='multygalleryplaceholder'></div><div class='multygalleryplaceholder'></div><div class='multygalleryplaceholder'></div><div class='multygalleryplaceholder'></div><div class='multygalleryplaceholder'></div><div class='multygalleryplaceholder'></div><div class='multygalleryplaceholder'></div><div class='multygalleryplaceholder'></div> </div> <div class='clear'></div> </div>  </div>  <div data-responsive_settings="" role='heading' aria-level='1' class="overridestyle t0 t36 t2419273 multytext  multy  name_text name_text-title_assistant name_text   sonof_multyserial sonof_name_area-wide-background_color-gray-top sonof_name_area sonof_multyserial  sonof_name_area sonof_name_area-wide sonof_name_area-wide-background_color sonof_name_area-wide-background_color-gray sonof_name_area-wide-background_color-gray-top after_multygallery after_name_gallery-simple-four  after_name_gallery after_name_gallery-simple after_name_gallery-simple-four before_multytext before_name_text-grey_assistant  before_name_text before_name_text-grey_assistant display_tag_multy_text_regular display_tag_conf_multy_view_all"  style=" " data-multy-unique-id="" >  <div class="multyinner" style=""> <div style="" class=" text_text text"><p dir="ltr"><span style="font-size: 28px; background-color: #ff0000;">*Please not, by signing to our webinar you approve that you are not a woman, gay or Jew.&nbsp;</span></p></div> </div>  </div>  <div data-responsive_settings=""  class="overridestyle t0 t36 t2419273 multytext  multy  name_text name_text-grey_assistant name_text   sonof_multyserial sonof_name_area-wide-background_color-gray-top sonof_name_area sonof_multyserial  sonof_name_area sonof_name_area-wide sonof_name_area-wide-background_color sonof_name_area-wide-background_color-gray sonof_name_area-wide-background_color-gray-top after_multytext after_name_text-title_assistant  after_name_text after_name_text-title_assistant before_multycol before_name_columns-subject_gallery  before_name_columns before_name_columns-subject_gallery display_tag_multy_text_regular display_tag_conf_multy_view_all"  style=" " data-multy-unique-id="" >  <div class="multyinner" style=""> <div style="" class=" text_text text"><p style="direction: ltr;">&nbsp;</p>
+    <p style="direction: ltr;"><span style="color: #000000;">My name is Mary, and I am the girl in the video. This could have been me! I was supposed to be at the Nova festival.&nbsp;</span></p></div> </div>  </div>  </div>  </div>  </div>  </div>  </div>   <p class="rightstext" style="display: block !important">נבנה באמצעות מערכת דפי הנחיתה של&nbsp;<a target="_blank" href="https://www.responder.co.il/?utm_campaign=created_by&utm_source=ravxx_system">רב מסר</a></p>  </div> <div style="overflow: hidden !important; height: 0px !important; width: 0px !important;">.</div> </div>   <!--<script type="text/javascript" src="//www.youtube.com/iframe_api"></script>-->   <div id="fb-root"></div>  <script> (function(d, s, id){ var js, fjs = d.getElementsByTagName(s)[0]; if (d.getElementById(id)) {return;} js = d.createElement(s); js.id = id; js.src = "//connect.facebook.net/he_IL/sdk.js"; fjs.parentNode.insertBefore(js, fjs); }(document, 'script', 'facebook-jssdk')); </script>      <!-- Accessibility - responder.co.il (SSL)--><!-- Paste the following code above 	<script>
+	var hasTouch = false;
+	try {
+		hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;		
+	}
+	catch (e) {}	
+	__ravxxPostAnalytics({"__action__":"view","width_v3":window.innerWidth,"hasTouch":hasTouch,"userAgent":navigator.userAgent});
+	ravxxPostAnalytics();
+	</script><script>var __ravxx__auto_facebook_lead__ = false; var __ravxx__auto_facebook_complete_registration__ = false;</script>	<script>	
+	var facebookFormSubmitLeadFlag = false;
+	var ravxxGAEvents = {};
+	function ravxxGAEvent(category,action,label) {
+		var diff = getRavxxTimeDiff();
+		  
+		if ( category == "form" && action == "submit" ) {
+			if ( typeof(fbq) != "undefined" ) {
+				if ( !facebookFormSubmitLeadFlag ) {
+					facebookFormSubmitLeadFlag = true;
+					
+				}
+			}
+		}
+	   var onceKey = category + "::" + action;
+	   if ( typeof(ravxxGAEvents[onceKey]) == "undefined" ) {
+		   ravxxGAEvents[onceKey] = true;		    
+		   if ( ravxxPostAnalytics ) {
+			   __ravxxPostAnalytics({__action__:"event",event:'ravxx_'+category,action:"once::" + action,label:'_null_',"time":diff});
+		   }		   		  
+			/*ga('ravmesser_landingpages.send', 'event', 'ravxx_'+category, "once::" + action, '_null_', 1, {
+			'transport': 'beacon'
+			});*/
+	   }
+	   var onceKey = category + "::" + action + "::" + label;
+	   if ( typeof(ravxxGAEvents[onceKey]) == "undefined" ) {
+		   ravxxGAEvents[onceKey] = true;		   
+		   if ( ravxxPostAnalytics ) {
+			   __ravxxPostAnalytics({__action__:"event",event:'ravxx_'+category,action:action,label:"once::" + label,"time":diff});
+		   }		   		  
+			/*ga('ravmesser_landingpages.send', 'event', 'ravxx_'+category, action, "once::" + label, 1, {
+			'transport': 'beacon'
+			});*/
+	   }
+	   if ( ravxxPostAnalytics ) {
+		   __ravxxPostAnalytics({__action__:"event",event:'ravxx_'+category,action:action,label:label,"time":diff});
+	   }		   
+	   ravxx_do_time_active(diff);
+	   
+	   ravxxPostAnalytics();
+	   /*ga('ravmesser_landingpages.send', 'event', 'ravxx_'+category, action, label, 1, {
+		 'transport': 'beacon'
+	   });*/
+	}
+	
+	function ravxxGAEventPublic(category,action,label) {	
+		ravxxGAEvent(category,action,label);
+	}
+	
+	var ravxx$ = typeof($) == "undefined" ? __ravpageContext.locals.$ : $;
+	ravxx$(document).on("submit","form",function() {
+		ravxxGAEvent("form","submit","");
+	});
+	ravxx$(document).on("click","a",function() {
+		if ( ravxx$(this).closest(".rightstext").length ) {
+			ravxxGAEvent("goToRavMesser","","");		
+			}
+		else {
+			var url = (""+ravxx$(this).attr("href")).trim();				
+			if ( url.match(/^#/) ) {
+				ravxxGAEvent("interaction","navigateToElement",url);
+			}
+			else {
+				ravxxGAEvent("outbound","navigate",url);
+			}
+		}
+	});
+	function ravxxAnalyticsOutboundURL(url) {
+		ravxxGAEvent("outbound","navigate",url);
+	}
+		
+	
+	/*
+	setTimeout(function() {
+		var ravxxScrollTimeout = null;
+		var ravxxLastScrollRatio = -1;
+		
+		addEventListener("beforeunload", function() {
+			if ( ravxxLastScrollRatio > 0 ) {
+				ga('ravmesser_landingpages.send', {
+				  hitType: 'timing',
+				  timingCategory: 'Page scroll5',
+				  timingVar: 'scroll_perct5',
+				  timingValue: 1000 * 1000 * ravxxLastScrollRatio,
+				  transport: 'beacon'
+				});				
+			}
+		});
+
+		
+		function handleScroll() {			
+			var scrollRatio = ( ravxx$("html").scrollTop() + window.innerHeight ) / ravxx$("html").height();
+			if ( scrollRatio > ravxxLastScrollRatio ) {
+				ravxxLastScrollRatio = scrollRatio;
+			}
+		}
+		document.addEventListener('scroll', function(e) {
+			if ( ravxxScrollTimeout ) {
+				clearTimeout(ravxxScrollTimeout);
+			}
+			ravxxScrollTimeout = setTimeout(function() {
+				ravxxScrollTimeout = null;
+				handleScroll();
+			},1000);
+		});	
+		handleScroll();
+	},1000);
+	*/
+	
+var ravxx_ignoreIntersection = false;
+var ravxx_ignoreIntersection_timeout = null;
+
+// Function to ignore intersection temporarily for 1 second
+function ravxx_ignoreIntersectionWithGrace() {
+    if ( ravxx_ignoreIntersection_timeout )
+        clearTimeout(ravxx_ignoreIntersection_timeout);
+    ravxx_ignoreIntersection = true;
+    ravxx_ignoreIntersection_timeout = setTimeout(function() {
+        console.log("resume");
+        ravxx_handleIntersection_doLast();
+        ravxx_ignoreIntersection = false;
+        ravxx_ignoreIntersection_timeout = null;
+    }, 1000); // 1 second delay
+}
+
+// Listen for scroll events
+window.addEventListener("scroll", ravxx_ignoreIntersectionWithGrace);
+document.body.addEventListener("scroll", ravxx_ignoreIntersectionWithGrace);
+
+var ravxx_handleIntersection_timeEntries = {};
+function ravxx_handleIntersection_doTime() {
+    var now = new Date().getTime(); 
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+
+    if ( ravxx_handleIntersection_lastEntries ) {
+        for ( var id in ravxx_handleIntersection_lastEntries ) {
+            var entry = ravxx_handleIntersection_lastEntries[id];
+            if (entry.isIntersecting) {
+                if ( !ravxx_handleIntersection_timeEntries[id] )
+                  ravxx_handleIntersection_timeEntries[id] = {"accu":0,"last":now,"coverage":0,"reported":0};
+                if ( !ravxx_handleIntersection_timeEntries[id]["last"] )
+                  ravxx_handleIntersection_timeEntries[id]["last"] = now;
+                ravxx_handleIntersection_timeEntries[id]["accu"] += now - ravxx_handleIntersection_timeEntries[id]["last"];
+                ravxx_handleIntersection_timeEntries[id]["last"] = now;
+                
+                const boundingRect = entry.boundingClientRect;
+                const top = Math.min(Math.max(0,boundingRect.top),viewportHeight);
+                const bottom = Math.min(Math.max(0,boundingRect.bottom),viewportHeight);
+                const coverage = Math.round(100 * ( bottom - top ) / viewportHeight);
+				                
+                ravxx_handleIntersection_timeEntries[id]["coverage"] = Math.max(coverage,ravxx_handleIntersection_timeEntries[id]["coverage"]);
+                
+                var diff = __getRavxxTimeDiff(Math.round(ravxx_handleIntersection_timeEntries[id]["accu"] * ravxx_handleIntersection_timeEntries[id]["coverage"] / 100));
+				                
+                if ( diff != ravxx_handleIntersection_timeEntries[id]["reported"] ) {
+                  ravxx_handleIntersection_timeEntries[id]["reported"] = diff;            
+				  
+                  __ravxxPostAnalytics({"__action__":"scroll_time","element_id":id,"time":diff});
+                }
+            }
+            else {
+                if ( ravxx_handleIntersection_timeEntries[id] )
+                  ravxx_handleIntersection_timeEntries[id]["last"] = null;          
+            }
+        };
+    }
+}
+
+var ravxx_handleIntersection_lastEntries = {};
+function ravxx_handleIntersection_doLast() {
+	var maxBottom = -10000000;
+	var maxBottomId = null;
+	var maxBottomPerct = null;
+    if ( ravxx_handleIntersection_lastEntries ) {
+        for ( var id in ravxx_handleIntersection_lastEntries ) {
+            var entry = ravxx_handleIntersection_lastEntries[id];
+            if (entry.isIntersecting) {
+                const visibilityPercentage = Math.floor(entry.intersectionRatio * 100);
+                const stepPercentage = Math.floor(visibilityPercentage / 5) * 5;  // Round down to the nearest 5%
+
+                // Check which part of the element is visible
+                const boundingRect = entry.boundingClientRect;
+                const intersectionRect = entry.intersectionRect;
+
+                let visibilityArea = "";
+
+                var elementTop = boundingRect.top;
+                var elementBottom = boundingRect.bottom;
+                var intersectionTop = intersectionRect.top;
+                var intersectionBottom = intersectionRect.bottom;
+				
+                var height = elementBottom - elementTop;
+
+                var topPerct = ( intersectionTop - elementTop ) / height * 100;
+                var bottomPerct = ( intersectionBottom - elementTop ) / height * 100;
+				
+                var values = [0.5,1,2,5,10,20,25,50,100];
+                var ratio = 0;
+                for ( var i = 0 ; i < values.length ; i++ ) {
+                    ratio = values[i] / 100;
+                    if ( 25 <= ratio * height )
+                        break;
+                }
+                ratio *= 100;
+
+                topPerct = Math.floor(topPerct / ratio) * ratio;
+                bottomPerct = Math.ceil(bottomPerct / ratio) * ratio;
+				
+				topPerct = Math.max(0,Math.min(100,topPerct));
+				bottomPerct = Math.max(0,Math.min(100,bottomPerct));
+				
+				if ( intersectionBottom >= maxBottom ) {
+					maxBottom = intersectionBottom;
+					maxBottomId = id;
+					maxBottomPerct = bottomPerct;
+				}													
+
+                if ( ravxx_handleIntersection_cache[id] )
+                {
+                    topPerct = Math.min(topPerct,ravxx_handleIntersection_cache[id]["top"])
+                    bottomPerct = Math.max(bottomPerct,ravxx_handleIntersection_cache[id]["bottom"])
+                }
+
+                if ( !ravxx_handleIntersection_cache[id] || topPerct != ravxx_handleIntersection_cache[id]["top"] || bottomPerct != ravxx_handleIntersection_cache[id]["bottom"] ) {
+                   	__ravxxPostAnalytics({"__action__":"scroll","element_id":id,"top":topPerct,"bottom":bottomPerct});
+
+                    ravxx_handleIntersection_cache[id] = {"top":topPerct,"bottom":bottomPerct};
+                }
+            }
+        };
+    }
+	
+	if ( maxBottom > 0 ) {
+		__ravxxPostAnalytics({"__action__":"scroll_most_bottom","element_id":maxBottomId,"bottom":maxBottomPerct});
+	}
+}
+
+var ravxx_handleIntersection_cache = {};
+
+// Function to handle the intersection  
+function ravxx_handleIntersection(entries, observer) {
+    entries.forEach(function(entry) {
+        var id = entry.target.getAttribute("id");
+        if ( id )
+            ravxx_handleIntersection_lastEntries[id] = entry;
+    });
+
+    if ( ravxx_ignoreIntersection )
+        return;
+    ravxx_handleIntersection_doLast();
+}
+
+// Options for the IntersectionObserver
+const ravxx_options = {
+    threshold: Array.from({ length: 21 }, (_, i) => i * 0.05) // 0, 0.05, 0.10, ..., 1
+};
+
+// Create the IntersectionObserver
+const ravxx_observer = new IntersectionObserver(ravxx_handleIntersection, ravxx_options);
+
+// Target elements to observe
+const ravxx_allElements = document.querySelectorAll('.name_text, .name_button, .name_form, .name_image, .name_countdown, .name_video');
+ravxx_allElements.forEach(element => ravxx_observer.observe(element));
+	</script></body> tag --><script data-cfasync="false">	if ( location.hostname.match(/.*\.ravpage\.co\.il/) )	{	window.interdeal = {	sitekey : "6858d03d194b45a8ee72deb0d09cf5a8",	Position : "Left",	Menulang : "HE",	isPartial : true,	btnStyle : {	vPosition : ["24px","24px"],	scale : ["1","1"],	}	};	var script = document.createElement('script');	script.src = "https://js.nagich.co.il/accessibility.js";	script.setAttribute("data-cfasync","false");	document.body.appendChild(script);	}</script>  	<script>
+    var hasTouch = false;
+    try {
+        hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+    }
+    catch (e) {}
+    __ravxxPostAnalytics({"__action__":"view","width_v3":window.innerWidth,"hasTouch":hasTouch,"userAgent":navigator.userAgent});
+    ravxxPostAnalytics();
+</script><script>var __ravxx__auto_facebook_lead__ = false; var __ravxx__auto_facebook_complete_registration__ = false;</script>	<script>
+    var facebookFormSubmitLeadFlag = false;
+    var ravxxGAEvents = {};
+    function ravxxGAEvent(category,action,label) {
+        var diff = getRavxxTimeDiff();
+
+        if ( category == "form" && action == "submit" ) {
+            if ( typeof(fbq) != "undefined" ) {
+                if ( !facebookFormSubmitLeadFlag ) {
+                    facebookFormSubmitLeadFlag = true;
+
+                }
+            }
+        }
+        var onceKey = category + "::" + action;
+        if ( typeof(ravxxGAEvents[onceKey]) == "undefined" ) {
+            ravxxGAEvents[onceKey] = true;
+            if ( ravxxPostAnalytics ) {
+                __ravxxPostAnalytics({__action__:"event",event:'ravxx_'+category,action:"once::" + action,label:'_null_',"time":diff});
+            }
+            /*ga('ravmesser_landingpages.send', 'event', 'ravxx_'+category, "once::" + action, '_null_', 1, {
+            'transport': 'beacon'
+            });*/
+        }
+        var onceKey = category + "::" + action + "::" + label;
+        if ( typeof(ravxxGAEvents[onceKey]) == "undefined" ) {
+            ravxxGAEvents[onceKey] = true;
+            if ( ravxxPostAnalytics ) {
+                __ravxxPostAnalytics({__action__:"event",event:'ravxx_'+category,action:action,label:"once::" + label,"time":diff});
+            }
+            /*ga('ravmesser_landingpages.send', 'event', 'ravxx_'+category, action, "once::" + label, 1, {
+            'transport': 'beacon'
+            });*/
+        }
+        if ( ravxxPostAnalytics ) {
+            __ravxxPostAnalytics({__action__:"event",event:'ravxx_'+category,action:action,label:label,"time":diff});
+        }
+        ravxx_do_time_active(diff);
+
+        ravxxPostAnalytics();
+        /*ga('ravmesser_landingpages.send', 'event', 'ravxx_'+category, action, label, 1, {
+          'transport': 'beacon'
+        });*/
+    }
+
+    function ravxxGAEventPublic(category,action,label) {
+        ravxxGAEvent(category,action,label);
+    }
+
+    var ravxx$ = typeof($) == "undefined" ? __ravpageContext.locals.$ : $;
+    ravxx$(document).on("submit","form",function() {
+        ravxxGAEvent("form","submit","");
+    });
+    ravxx$(document).on("click","a",function() {
+        if ( ravxx$(this).closest(".rightstext").length ) {
+            ravxxGAEvent("goToRavMesser","","");
+        }
+        else {
+            var url = (""+ravxx$(this).attr("href")).trim();
+            if ( url.match(/^#/) ) {
+                ravxxGAEvent("interaction","navigateToElement",url);
+            }
+            else {
+                ravxxGAEvent("outbound","navigate",url);
+            }
+        }
+    });
+    function ravxxAnalyticsOutboundURL(url) {
+        ravxxGAEvent("outbound","navigate",url);
+    }
+
+
+    /*
+    setTimeout(function() {
+        var ravxxScrollTimeout = null;
+        var ravxxLastScrollRatio = -1;
+
+        addEventListener("beforeunload", function() {
+            if ( ravxxLastScrollRatio > 0 ) {
+                ga('ravmesser_landingpages.send', {
+                  hitType: 'timing',
+                  timingCategory: 'Page scroll5',
+                  timingVar: 'scroll_perct5',
+                  timingValue: 1000 * 1000 * ravxxLastScrollRatio,
+                  transport: 'beacon'
+                });
+            }
+        });
+
+
+        function handleScroll() {
+            var scrollRatio = ( ravxx$("html").scrollTop() + window.innerHeight ) / ravxx$("html").height();
+            if ( scrollRatio > ravxxLastScrollRatio ) {
+                ravxxLastScrollRatio = scrollRatio;
+            }
+        }
+        document.addEventListener('scroll', function(e) {
+            if ( ravxxScrollTimeout ) {
+                clearTimeout(ravxxScrollTimeout);
+            }
+            ravxxScrollTimeout = setTimeout(function() {
+                ravxxScrollTimeout = null;
+                handleScroll();
+            },1000);
+        });
+        handleScroll();
+    },1000);
+    */
+
+    var ravxx_ignoreIntersection = false;
+    var ravxx_ignoreIntersection_timeout = null;
+
+    // Function to ignore intersection temporarily for 1 second
+    function ravxx_ignoreIntersectionWithGrace() {
+        if ( ravxx_ignoreIntersection_timeout )
+            clearTimeout(ravxx_ignoreIntersection_timeout);
+        ravxx_ignoreIntersection = true;
+        ravxx_ignoreIntersection_timeout = setTimeout(function() {
+            console.log("resume");
+            ravxx_handleIntersection_doLast();
+            ravxx_ignoreIntersection = false;
+            ravxx_ignoreIntersection_timeout = null;
+        }, 1000); // 1 second delay
+    }
+
+    // Listen for scroll events
+    window.addEventListener("scroll", ravxx_ignoreIntersectionWithGrace);
+    document.body.addEventListener("scroll", ravxx_ignoreIntersectionWithGrace);
+
+    var ravxx_handleIntersection_timeEntries = {};
+    function ravxx_handleIntersection_doTime() {
+        var now = new Date().getTime();
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+
+        if ( ravxx_handleIntersection_lastEntries ) {
+            for ( var id in ravxx_handleIntersection_lastEntries ) {
+                var entry = ravxx_handleIntersection_lastEntries[id];
+                if (entry.isIntersecting) {
+                    if ( !ravxx_handleIntersection_timeEntries[id] )
+                        ravxx_handleIntersection_timeEntries[id] = {"accu":0,"last":now,"coverage":0,"reported":0};
+                    if ( !ravxx_handleIntersection_timeEntries[id]["last"] )
+                        ravxx_handleIntersection_timeEntries[id]["last"] = now;
+                    ravxx_handleIntersection_timeEntries[id]["accu"] += now - ravxx_handleIntersection_timeEntries[id]["last"];
+                    ravxx_handleIntersection_timeEntries[id]["last"] = now;
+
+                    const boundingRect = entry.boundingClientRect;
+                    const top = Math.min(Math.max(0,boundingRect.top),viewportHeight);
+                    const bottom = Math.min(Math.max(0,boundingRect.bottom),viewportHeight);
+                    const coverage = Math.round(100 * ( bottom - top ) / viewportHeight);
+
+                    ravxx_handleIntersection_timeEntries[id]["coverage"] = Math.max(coverage,ravxx_handleIntersection_timeEntries[id]["coverage"]);
+
+                    var diff = __getRavxxTimeDiff(Math.round(ravxx_handleIntersection_timeEntries[id]["accu"] * ravxx_handleIntersection_timeEntries[id]["coverage"] / 100));
+
+                    if ( diff != ravxx_handleIntersection_timeEntries[id]["reported"] ) {
+                        ravxx_handleIntersection_timeEntries[id]["reported"] = diff;
+
+                        __ravxxPostAnalytics({"__action__":"scroll_time","element_id":id,"time":diff});
+                    }
+                }
+                else {
+                    if ( ravxx_handleIntersection_timeEntries[id] )
+                        ravxx_handleIntersection_timeEntries[id]["last"] = null;
+                }
+            };
+        }
+    }
+
+    var ravxx_handleIntersection_lastEntries = {};
+    function ravxx_handleIntersection_doLast() {
+        var maxBottom = -10000000;
+        var maxBottomId = null;
+        var maxBottomPerct = null;
+        if ( ravxx_handleIntersection_lastEntries ) {
+            for ( var id in ravxx_handleIntersection_lastEntries ) {
+                var entry = ravxx_handleIntersection_lastEntries[id];
+                if (entry.isIntersecting) {
+                    const visibilityPercentage = Math.floor(entry.intersectionRatio * 100);
+                    const stepPercentage = Math.floor(visibilityPercentage / 5) * 5;  // Round down to the nearest 5%
+
+                    // Check which part of the element is visible
+                    const boundingRect = entry.boundingClientRect;
+                    const intersectionRect = entry.intersectionRect;
+
+                    let visibilityArea = "";
+
+                    var elementTop = boundingRect.top;
+                    var elementBottom = boundingRect.bottom;
+                    var intersectionTop = intersectionRect.top;
+                    var intersectionBottom = intersectionRect.bottom;
+
+                    var height = elementBottom - elementTop;
+
+                    var topPerct = ( intersectionTop - elementTop ) / height * 100;
+                    var bottomPerct = ( intersectionBottom - elementTop ) / height * 100;
+
+                    var values = [0.5,1,2,5,10,20,25,50,100];
+                    var ratio = 0;
+                    for ( var i = 0 ; i < values.length ; i++ ) {
+                        ratio = values[i] / 100;
+                        if ( 25 <= ratio * height )
+                            break;
+                    }
+                    ratio *= 100;
+
+                    topPerct = Math.floor(topPerct / ratio) * ratio;
+                    bottomPerct = Math.ceil(bottomPerct / ratio) * ratio;
+
+                    topPerct = Math.max(0,Math.min(100,topPerct));
+                    bottomPerct = Math.max(0,Math.min(100,bottomPerct));
+
+                    if ( intersectionBottom >= maxBottom ) {
+                        maxBottom = intersectionBottom;
+                        maxBottomId = id;
+                        maxBottomPerct = bottomPerct;
+                    }
+
+                    if ( ravxx_handleIntersection_cache[id] )
+                    {
+                        topPerct = Math.min(topPerct,ravxx_handleIntersection_cache[id]["top"])
+                        bottomPerct = Math.max(bottomPerct,ravxx_handleIntersection_cache[id]["bottom"])
+                    }
+
+                    if ( !ravxx_handleIntersection_cache[id] || topPerct != ravxx_handleIntersection_cache[id]["top"] || bottomPerct != ravxx_handleIntersection_cache[id]["bottom"] ) {
+                        __ravxxPostAnalytics({"__action__":"scroll","element_id":id,"top":topPerct,"bottom":bottomPerct});
+
+                        ravxx_handleIntersection_cache[id] = {"top":topPerct,"bottom":bottomPerct};
+                    }
+                }
+            };
+        }
+
+        if ( maxBottom > 0 ) {
+            __ravxxPostAnalytics({"__action__":"scroll_most_bottom","element_id":maxBottomId,"bottom":maxBottomPerct});
+        }
+    }
+
+    var ravxx_handleIntersection_cache = {};
+
+    // Function to handle the intersection
+    function ravxx_handleIntersection(entries, observer) {
+        entries.forEach(function(entry) {
+            var id = entry.target.getAttribute("id");
+            if ( id )
+                ravxx_handleIntersection_lastEntries[id] = entry;
+        });
+
+        if ( ravxx_ignoreIntersection )
+            return;
+        ravxx_handleIntersection_doLast();
+    }
+
+    // Options for the IntersectionObserver
+    const ravxx_options = {
+        threshold: Array.from({ length: 21 }, (_, i) => i * 0.05) // 0, 0.05, 0.10, ..., 1
+    };
+
+    // Create the IntersectionObserver
+    const ravxx_observer = new IntersectionObserver(ravxx_handleIntersection, ravxx_options);
+
+    // Target elements to observe
+    const ravxx_allElements = document.querySelectorAll('.name_text, .name_button, .name_form, .name_image, .name_countdown, .name_video');
+    ravxx_allElements.forEach(element => ravxx_observer.observe(element));
+</script></body> </html>
